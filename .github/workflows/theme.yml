@@ -1,0 +1,37 @@
+name: Generate PrimeVue Theme from Tokens
+
+on:
+  push:
+    paths:
+      - "tokens.json"
+
+permissions:
+  contents: write
+
+jobs:
+  generate-tokens:
+    name: Generate Theme Code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Generate Prime Theme
+        uses: primefaces/theme-designer-ci@1.0.0-beta.4
+        with:
+          designer-secret: ${{ secrets.THEME_DESIGNER_SECRET_KEY }}
+          theme-name: "katrisk"
+          font-size: "14px"
+          font-family: "Onest, sans-serif"
+          project: "primevue"
+          tokens-path: "tokens.json"
+          output-dir: "./katrisk-theme"
+
+      - name: Commit generated theme
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add ./katrisk-theme
+          git diff --cached --quiet || git commit -m "chore: update katrisk theme from tokens"
+          git push
